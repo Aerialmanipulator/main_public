@@ -30,7 +30,7 @@ class VirtualGripper:
         self.max_relative_speed = max_relative_speed
         self.constraint_id: int | None = None
         self.attached_body_id: int | None = None
-        self.disabled_collision_pairs: list[tuple[int, int]] = []
+        self.disabled_collision_pairs: list[tuple[int, int, int, int]] = []
 
     def is_holding_object(self) -> bool:
         return self.constraint_id is not None and self.attached_body_id is not None
@@ -40,9 +40,14 @@ class VirtualGripper:
             self.pb.removeConstraint(self.constraint_id)
             self.constraint_id = None
             self.attached_body_id = None
-        for body_a, body_b in self.disabled_collision_pairs:
-            self.pb.setCollisionFilterPair(body_a, body_b, -1, -1, 1)
+        for body_a, body_b, link_a, link_b in self.disabled_collision_pairs:
+            self.pb.setCollisionFilterPair(body_a, body_b, link_a, link_b, 1)
         self.disabled_collision_pairs.clear()
+
+    def _disable_collisions_between_robot_and_target(self, target_body_id: int) -> None:
+        for robot_link_index in range(-1, self.pb.getNumJoints(self.robot_id)):
+            self.pb.setCollisionFilterPair(self.robot_id, target_body_id, robot_link_index, -1, 0)
+            self.disabled_collision_pairs.append((self.robot_id, target_body_id, robot_link_index, -1))
 
     def measure_target_alignment(self, target_body_id: int) -> tuple[float, float]:
         contact_points = self.pb.getContactPoints(
@@ -129,6 +134,10 @@ class VirtualGripper:
         if disable_collisions_with:
             for other_body_id in disable_collisions_with:
                 self.pb.setCollisionFilterPair(target_body_id, other_body_id, -1, -1, 0)
-                self.disabled_collision_pairs.append((target_body_id, other_body_id))
+                self.disabled_collision_pairs.append((target_body_id, other_body_id, -1, -1))
+
+        # Once the object is rigidly attached to the wrist, self-collisions between the object
+        # and the UAV/arm links mainly inject solver jitter instead of useful contact behavior.
+        self._disable_collisions_between_robot_and_target(target_body_id)
         self.attached_body_id = target_body_id
         return GraspAttempt(True, "constraint created", distance=distance, relative_speed=relative_speed)

@@ -178,21 +178,44 @@ def main() -> None:
     state = DemoState.TAKEOFF
     state_entry_step = 0
     hold_steps = 0
-    pre_grasp_offset = np.array([0.0, 0.0, 0.07], dtype=float)
-    grasp_offset = np.array([0.0, 0.0, 0.008], dtype=float)
+    pre_grasp_height = 0.08
+    grasp_height = 0.03
     stabilize_steps = 18
     secure_steps = 20
     grasp_ready_steps = 0
     grasp_anchor_position = None
+    grasp_end_effector_orientation = None
+    secure_target_position = None
     lift_clearance = 0.12
     end_effector_below_base_margin = 0.34
     takeoff_settle_steps = 20
     align_settle_steps = 20
 
+    def compute_side_approach_offsets(target_position_array: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        direction_xy = target_position_array[:2] - np.array([args.transit_x, args.transit_y], dtype=float)
+        norm = float(np.linalg.norm(direction_xy))
+        if norm < 1e-6:
+            unit_xy = np.array([1.0, 0.0], dtype=float)
+        else:
+            unit_xy = direction_xy / norm
+
+        # Approach from the near side of the object instead of plunging through the pillar centerline.
+        side_offset_xy = -0.022 * unit_xy
+        pre_grasp_offset = np.array([side_offset_xy[0], side_offset_xy[1], pre_grasp_height], dtype=float)
+        grasp_offset = np.array([side_offset_xy[0], side_offset_xy[1], grasp_height], dtype=float)
+        return pre_grasp_offset, grasp_offset
+
+    def constrain_grasp_target(target_position_array: np.ndarray, raw_offset: np.ndarray) -> list[float]:
+        target_command = target_position_array + raw_offset
+        pedestal_top_z = scene.target_spawn_position[2] - 0.025
+        target_command[2] = max(target_command[2], pedestal_top_z + 0.045)
+        return target_command.tolist()
+
     try:
         for step in range(args.sim_steps):
             target_position, _ = p.getBasePositionAndOrientation(scene.target_id)
             target_position_array = np.asarray(target_position, dtype=float)
+            pre_grasp_offset, grasp_offset = compute_side_approach_offsets(target_position_array)
 
             if state == DemoState.TAKEOFF:
                 hover_target = [0.0, 0.0, args.hover_z]
@@ -226,7 +249,7 @@ def main() -> None:
 
             elif state == DemoState.APPROACH:
                 hover_target = [args.transit_x, args.transit_y, args.grasp_z]
-                approach_target = (target_position_array + pre_grasp_offset).tolist()
+                approach_target = constrain_grasp_target(target_position_array, pre_grasp_offset)
                 uav_controller.step(hover_target)
                 residual = arm_controller.command_end_effector(approach_target)
                 if residual <= 0.03 and arm_controller.at_pose(approach_target, tolerance=0.04):
@@ -235,7 +258,7 @@ def main() -> None:
 
             elif state == DemoState.STABILIZE:
                 hover_target = [args.transit_x, args.transit_y, args.grasp_z]
-                approach_target = (target_position_array + pre_grasp_offset).tolist()
+                approach_target = constrain_grasp_target(target_position_array, pre_grasp_offset)
                 uav_controller.step(hover_target)
                 arm_controller.command_end_effector(approach_target)
                 if step - state_entry_step >= stabilize_steps:
@@ -245,7 +268,7 @@ def main() -> None:
 
             elif state == DemoState.GRASP:
                 hover_target = [args.transit_x, args.transit_y, args.grasp_z]
-                grasp_target = (target_position_array + grasp_offset).tolist()
+                grasp_target = constrain_grasp_target(target_position_array, grasp_offset)
                 uav_controller.step(hover_target)
                 arm_controller.command_end_effector(grasp_target)
                 if gripper.is_grasp_ready(scene.target_id):
@@ -261,6 +284,8 @@ def main() -> None:
                     )
                     if attempt.success:
                         grasp_anchor_position = target_position_array.copy()
+                        _, grasp_end_effector_orientation = arm_controller.get_end_effector_pose()
+                        secure_target_position = constrain_grasp_target(grasp_anchor_position, grasp_offset)
                         state, state_entry_step = DemoState.SECURE, step
                         print(f"[step {step}] Grasp success ({attempt.reason}). Transition -> SECURE")
                 elif step - state_entry_step > 360:
@@ -268,9 +293,8 @@ def main() -> None:
 
             elif state == DemoState.SECURE:
                 hover_target = [args.transit_x, args.transit_y, args.grasp_z]
-                secure_target = (target_position_array + grasp_offset).tolist()
                 uav_controller.step(hover_target)
-                arm_controller.command_end_effector(secure_target)
+                arm_controller.command_end_effector(secure_target_position, target_orientation=grasp_end_effector_orientation)
                 if step - state_entry_step >= secure_steps:
                     state, state_entry_step = DemoState.LIFT, step
                     print(f"[step {step}] Transition -> LIFT")
@@ -287,7 +311,7 @@ def main() -> None:
                     safe_lift_z,
                 ]
                 uav_controller.step(hover_target)
-                arm_controller.command_end_effector(lift_target)
+                arm_controller.command_end_effector(lift_target, target_orientation=grasp_end_effector_orientation)
                 if uav_controller.at_target(hover_target, position_tolerance=0.05) and gripper.is_holding_object():
                     state, state_entry_step = DemoState.HOLD, step
                     print(f"[step {step}] Transition -> HOLD")
@@ -305,7 +329,7 @@ def main() -> None:
                     safe_hold_z,
                 ]
                 uav_controller.step(hover_target)
-                arm_controller.command_end_effector(hold_target)
+                arm_controller.command_end_effector(hold_target, target_orientation=grasp_end_effector_orientation)
                 hold_steps += 1
                 if hold_steps >= 240:
                     state = DemoState.FINISHED

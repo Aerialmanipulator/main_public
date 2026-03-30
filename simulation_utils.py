@@ -172,7 +172,7 @@ def describe_joint_layout(pb, robot_id: int) -> list[str]:
 def create_demo_scene(
     pb,
     target_position: tuple[float, float, float] = (0.02, 0.03, 0.63),
-    pedestal_half_extents_xy: tuple[float, float] = (0.06, 0.06),
+    pedestal_half_extents_xy: tuple[float, float] = (0.035, 0.035),
 ) -> DemoScene:
     target_half_extents = [0.025, 0.025, 0.025]
     support_top_z = max(target_position[2] - target_half_extents[2], 0.04)
