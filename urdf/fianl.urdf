@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="uav_arm_combo">
+  
+  <link name="body">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="2.8" />
+      <inertia ixx="0.07166" ixy="0.0" ixz="0.0" 
+               iyy="0.07166" iyz="0.0" 
+               izz="0.135" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/body.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/body.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="rotor0">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="0.000403" ixy="0.0" ixz="0.0" 
+               iyy="0.000403" iyz="0.0" 
+               izz="0.000806" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor0.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor0.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="joint0" type="revolute">
+    <origin xyz="0.24042 -0.24042 0.0466" rpy="0 0 0" />
+    <parent link="body" />
+    <child link="rotor0" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+
+  <link name="rotor1">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="0.000403" ixy="0.0" ixz="0.0" 
+               iyy="0.000403" iyz="0.0" 
+               izz="0.000806" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor1.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="joint1" type="revolute">
+    <origin xyz="-0.24042 0.24042 0.0466" rpy="0 0 0" />
+    <parent link="body" />
+    <child link="rotor1" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+
+  <link name="rotor2">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="0.000403" ixy="0.0" ixz="0.0" 
+               iyy="0.000403" iyz="0.0" 
+               izz="0.000806" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor2.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="joint2" type="revolute">
+    <origin xyz="0.24042 0.24042 0.0466" rpy="0 0 0" />
+    <parent link="body" />
+    <child link="rotor2" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+
+  <link name="rotor3">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="0.000403" ixy="0.0" ixz="0.0" 
+               iyy="0.000403" iyz="0.0" 
+               izz="0.000806" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor3.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://uav_urdf_export_v1/meshes/rotor3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="joint3" type="revolute">
+    <origin xyz="-0.24042 -0.24042 0.0466" rpy="0 0 0" />
+    <parent link="body" />
+    <child link="rotor3" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+
+  <joint name="uav_to_arm_joint" type="fixed">
+    <origin xyz="0 0 -0.10" rpy="0 0 0" />
+    <parent link="body" />
+    <child link="arm_base" />
+  </joint>
+
+  <link name="arm_base">
+    <inertial>
+      <origin xyz="-0.013255 -0.000065 -0.033657" rpy="3.121753 1.329014 -3.133363" />
+      <mass value="0.43802" />
+      <inertia ixx="2.95007430e-04" ixy="0.0" ixz="0.0" iyy="3.21171000e-04" iyz="0.0" izz="4.30872890e-04" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_base.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_base.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="arm_link_1">
+    <inertial>
+      <origin xyz="0.005195 0.078399 0.000465" rpy="1.392314 1.528217 0.109767" />
+      <mass value="0.39544" />
+      <inertia ixx="1.68420700e-04" ixy="0.0" ixz="0.0" iyy="3.03396020e-04" iyz="0.0" izz="4.17595380e-04" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_1.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm_joint_1" type="revolute">
+    <origin xyz="0 0 -0.0395" rpy="-1.5708 0 -1.5708" />
+    <parent link="arm_base" />
+    <child link="arm_link_1" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+  <link name="arm_link_2">
+    <inertial>
+      <origin xyz="-0.006392 -0.148340 -0.015990" rpy="3.114994 1.330473 1.772177" />
+      <mass value="0.38395" />
+      <inertia ixx="1.37089080e-04" ixy="0.0" ixz="0.0" iyy="5.69606970e-04" iyz="0.0" izz="5.77091720e-04" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_2.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm_joint_2" type="revolute">
+    <origin xyz="0.021 0.0835 0" rpy="3.1416 -1.5708 0" />
+    <parent link="arm_link_1" />
+    <child link="arm_link_2" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+  <link name="arm_link_3">
+    <inertial>
+      <origin xyz="0.146964 -0.006320 -0.015789" rpy="1.273313 0.004246 -0.171921" />
+      <mass value="0.38835" />
+      <inertia ixx="1.38441510e-04" ixy="0.0" ixz="0.0" iyy="6.31972740e-04" iyz="0.0" izz="6.38944400e-04" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_3.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm_joint_3" type="revolute">
+    <origin xyz="0.0165 -0.161 -0.0184" rpy="-1.5708 0 -1.5708" />
+    <parent link="arm_link_2" />
+    <child link="arm_link_3" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+  <link name="arm_link_4">
+    <inertial>
+      <origin xyz="-0.000072 0.054825 -0.023087" rpy="2.632522 0.047131 -1.572440" />
+      <mass value="0.20956" />
+      <inertia ixx="7.50388700e-05" ixy="0.0" ixz="0.0" iyy="1.24015100e-04" iyz="0.0" izz="1.30018150e-04" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_4.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm_joint_4" type="revolute">
+    <origin xyz="0.161 0.0165 -0.0184" rpy="-1.5708 -1.5708 0" />
+    <parent link="arm_link_3" />
+    <child link="arm_link_4" />
+    <axis xyz="0 0 -1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+  <link name="arm_link_5">
+    <inertial>
+      <origin xyz="0.004917 0.000000 0.011054" rpy="3.141593 1.099300 0.000000" />
+      <mass value="0.01978" />
+      <inertia ixx="2.46243000e-06" ixy="0.0" ixz="0.0" iyy="3.30888000e-06" iyz="0.0" izz="4.16111000e-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_5.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://arm_urdf_export_v2/meshes/arm_link_5.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="arm_joint_5" type="revolute">
+    <origin xyz="0 0.0779 -0.026" rpy="-1.5708 0 0" />
+    <parent link="arm_link_4" />
+    <child link="arm_link_5" />
+    <axis xyz="0 0 1" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+  </joint>
+
+</robot>

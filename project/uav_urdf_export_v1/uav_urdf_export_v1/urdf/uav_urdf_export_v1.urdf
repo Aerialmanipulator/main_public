@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.1-13-g25da24a-dirty  Build Version: 1.6.9436.28802
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="uav_urdf_export_v1">
+  <link
+    name="body">
+    <inertial>
+      <origin
+        xyz="0.0030318 1.4861E-06 -0.091887"
+        rpy="0 0 0" />
+      <mass
+        value="0.55051" />
+      <inertia
+        ixx="0.00096053"
+        ixy="-1.1089E-08"
+        ixz="1.9926E-15"
+        iyy="0.0012578"
+        iyz="-8.827E-15"
+        izz="0.0015077" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/body.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/body.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="rotor0">
+    <inertial>
+      <origin
+        xyz="-8.2901E-10 -2.5587E-10 -0.0038263"
+        rpy="0 0 0" />
+      <mass
+        value="0.0047043" />
+      <inertia
+        ixx="8.3999E-06"
+        ixy="1.0528E-05"
+        ixz="1.9246E-14"
+        iyy="1.3602E-05"
+        iyz="-3.3218E-15"
+        izz="2.1938E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor0.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor0.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint0"
+    type="revolute">
+    <origin
+      xyz="0.24042 -0.24042 0.0466"
+      rpy="0 0 0" />
+    <parent
+      link="body" />
+    <child
+      link="rotor0" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="rotor1">
+    <inertial>
+      <origin
+        xyz="-6.0744E-09 -1.8748E-09 -0.0038263"
+        rpy="0 0 0" />
+      <mass
+        value="0.0047043" />
+      <inertia
+        ixx="8.3999E-06"
+        ixy="1.0528E-05"
+        ixz="1.4102E-13"
+        iyy="1.3602E-05"
+        iyz="-2.434E-14"
+        izz="2.1938E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint1"
+    type="revolute">
+    <origin
+      xyz="-0.24042 0.24042 0.0466"
+      rpy="0 0 0" />
+    <parent
+      link="body" />
+    <child
+      link="rotor1" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="rotor2">
+    <inertial>
+      <origin
+        xyz="-1.8748E-09 6.0744E-09 -0.0038263"
+        rpy="0 0 0" />
+      <mass
+        value="0.0047043" />
+      <inertia
+        ixx="1.3602E-05"
+        ixy="-1.0528E-05"
+        ixz="-2.434E-14"
+        iyy="8.3999E-06"
+        iyz="-1.4102E-13"
+        izz="2.1938E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint2"
+    type="revolute">
+    <origin
+      xyz="0.24042 0.24042 0.0466"
+      rpy="0 0 0" />
+    <parent
+      link="body" />
+    <child
+      link="rotor2" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="rotor3">
+    <inertial>
+      <origin
+        xyz="-2.3865E-09 7.7324E-09 -0.0038263"
+        rpy="0 0 0" />
+      <mass
+        value="0.0047043" />
+      <inertia
+        ixx="1.3602E-05"
+        ixy="-1.0528E-05"
+        ixz="-3.0983E-14"
+        iyy="8.3999E-06"
+        iyz="-1.7952E-13"
+        izz="2.1938E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://uav_urdf_export_v1/meshes/rotor3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint3"
+    type="revolute">
+    <origin
+      xyz="-0.24042 -0.24042 0.0466"
+      rpy="0 0 0" />
+    <parent
+      link="body" />
+    <child
+      link="rotor3" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>
