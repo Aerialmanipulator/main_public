@@ -21,7 +21,7 @@ class VirtualGripper:
         robot_id: int,
         end_effector_link_index: int,
         grasp_distance_threshold: float = 0.085,
-        max_relative_speed: float = 0.25,
+        max_relative_speed: float = 1.20,
     ) -> None:
         self.pb = pb
         self.robot_id = robot_id
@@ -77,6 +77,14 @@ class VirtualGripper:
         return distance <= self.grasp_distance_threshold and relative_speed <= self.max_relative_speed
 
     def close(self, target_body_id: int, disable_collisions_with: Sequence[int] | None = None) -> GraspAttempt:
+        return self.close_with_options(target_body_id, disable_collisions_with=disable_collisions_with)
+
+    def close_with_options(
+        self,
+        target_body_id: int,
+        disable_collisions_with: Sequence[int] | None = None,
+        release_constraint_ids: Sequence[int | None] | None = None,
+    ) -> GraspAttempt:
         if self.is_holding_object():
             return GraspAttempt(True, "object already attached")
 
@@ -97,6 +105,11 @@ class VirtualGripper:
             target_position,
             target_orientation,
         )
+
+        if release_constraint_ids:
+            for constraint_id in release_constraint_ids:
+                if constraint_id is not None:
+                    self.pb.removeConstraint(constraint_id)
 
         self.constraint_id = self.pb.createConstraint(
             self.robot_id,

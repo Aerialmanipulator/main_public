@@ -40,6 +40,7 @@ class DemoScene:
     pedestal_id: int
     target_id: int
     target_spawn_position: tuple[float, float, float]
+    target_support_constraint_id: int | None
 
 
 def find_robot_urdf(explicit_path: str | Path | None = None) -> Path:
@@ -221,8 +222,19 @@ def create_demo_scene(
         angularDamping=0.14,
         restitution=0.0,
     )
+    target_support_constraint_id = pb.createConstraint(
+        pedestal_id,
+        -1,
+        target_id,
+        -1,
+        pb.JOINT_FIXED,
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, pedestal_half_extents[2]],
+        [0.0, 0.0, -target_half_extents[2]],
+    )
     return DemoScene(
         pedestal_id=pedestal_id,
         target_id=target_id,
         target_spawn_position=target_position,
+        target_support_constraint_id=target_support_constraint_id,
     )

@@ -31,7 +31,12 @@ class ArmController:
         self.arm_joint_indices = self._find_joint_indices(robot_id, self.arm_joint_names)
         self.end_effector_link_index = self._find_link_index(robot_id, end_effector_link_name)
         self.lower_limits, self.upper_limits = self._read_joint_limits(robot_id, self.arm_joint_indices)
-        self.home_positions = np.zeros(len(self.arm_joint_indices), dtype=float)
+        default_home_positions = np.array([0.0, 0.0, 0.0, -math.pi, 0.0], dtype=float)
+        self.home_positions = np.clip(
+            default_home_positions[: len(self.arm_joint_indices)],
+            self.lower_limits,
+            self.upper_limits,
+        )
 
         # A second hidden client is used as a fixed-base kinematic proxy.
         # This keeps Jacobian-based IK numerically stable while the real robot remains free-flying.
@@ -108,6 +113,39 @@ class ArmController:
 
     def get_end_effector_pose(self) -> tuple[np.ndarray, np.ndarray]:
         state = self.pb.getLinkState(self.robot_id, self.end_effector_link_index, computeForwardKinematics=True)
+        return np.asarray(state[4], dtype=float), np.asarray(state[5], dtype=float)
+
+    def predict_end_effector_pose(
+        self,
+        base_position: Sequence[float],
+        base_orientation: Sequence[float] | None = None,
+        joint_positions: Sequence[float] | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        if base_orientation is None:
+            base_orientation = [0.0, 0.0, 0.0, 1.0]
+        if joint_positions is None:
+            joint_positions = self.home_positions
+
+        self.pb.resetBasePositionAndOrientation(
+            self.kinematics_robot_id,
+            base_position,
+            base_orientation,
+            physicsClientId=self.kinematics_client,
+        )
+        for joint_index, joint_value in zip(self.kinematics_joint_indices, joint_positions):
+            self.pb.resetJointState(
+                self.kinematics_robot_id,
+                joint_index,
+                float(joint_value),
+                physicsClientId=self.kinematics_client,
+            )
+
+        state = self.pb.getLinkState(
+            self.kinematics_robot_id,
+            self.kinematics_end_effector_index,
+            computeForwardKinematics=True,
+            physicsClientId=self.kinematics_client,
+        )
         return np.asarray(state[4], dtype=float), np.asarray(state[5], dtype=float)
 
     def set_joint_targets(self, joint_positions: Sequence[float], max_force: float | None = None) -> None:

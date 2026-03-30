@@ -57,6 +57,7 @@ from uav_controller import UAVController
 
 class DemoState(Enum):
     TAKEOFF = auto()
+    TRANSIT = auto()
     ALIGN = auto()
     DESCEND = auto()
     APPROACH = auto()
@@ -79,17 +80,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hover-z", type=float, default=1.25, help="Nominal hover height for the UAV.")
     parser.add_argument("--grasp-z", type=float, default=1.22, help="Lower hover height used during grasping.")
     parser.add_argument("--lift-z", type=float, default=1.38, help="Post-grasp lift height.")
+    parser.add_argument("--transit-x", type=float, default=0.55, help="World-frame x position of the pre-grasp hover waypoint.")
+    parser.add_argument("--transit-y", type=float, default=0.25, help="World-frame y position of the pre-grasp hover waypoint.")
     parser.add_argument(
         "--target-x",
         type=float,
         default=0.04,
-        help="Target x offset relative to the home end-effector pose after hover stabilization.",
+        help="Target x offset relative to the home end-effector pose at the transit waypoint.",
     )
     parser.add_argument(
         "--target-y",
         type=float,
         default=0.04,
-        help="Target y offset relative to the home end-effector pose after hover stabilization.",
+        help="Target y offset relative to the home end-effector pose at the transit waypoint.",
     )
     parser.add_argument(
         "--target-z-offset",
@@ -136,6 +139,7 @@ def main() -> None:
         flags=p.URDF_USE_INERTIA_FROM_FILE,
     )
     configure_loaded_robot(p, robot_id)
+    transit_hover_target = [args.transit_x, args.transit_y, args.hover_z]
 
     uav_controller = UAVController(p, robot_id, time_step=args.time_step)
     arm_controller = ArmController(
@@ -146,6 +150,16 @@ def main() -> None:
         end_effector_link_name="arm_link_5",
     )
     gripper = VirtualGripper(p, robot_id, arm_controller.end_effector_link_index)
+    predicted_home_position, _ = arm_controller.predict_end_effector_pose(
+        base_position=transit_hover_target,
+        base_orientation=start_orientation,
+        joint_positions=arm_controller.home_positions,
+    )
+    target_spawn = predicted_home_position + np.array(
+        [args.target_x, args.target_y, args.target_z_offset],
+        dtype=float,
+    )
+    scene = create_demo_scene(p, target_position=tuple(target_spawn.tolist()))
 
     print(f"Loaded robot URDF: {source_urdf}")
     print(f"Prepared robot URDF for PyBullet: {prepared_urdf}")
@@ -158,8 +172,9 @@ def main() -> None:
     print("  joint_index 4    : fixed mount joint from UAV body to arm base.")
     print("  joint_index 5-9  : arm_joint_1 .. arm_joint_5, the five actuated arm joints used by the DLS IK solver.")
     print("")
+    print(f"Spawned target at {np.round(target_spawn, 3).tolist()}")
+    print(f"Transit waypoint set to {np.round(transit_hover_target, 3).tolist()}")
 
-    scene = None
     state = DemoState.TAKEOFF
     state_entry_step = 0
     hold_steps = 0
@@ -171,40 +186,38 @@ def main() -> None:
     grasp_anchor_position = None
     lift_clearance = 0.12
     end_effector_below_base_margin = 0.34
+    takeoff_settle_steps = 20
+    align_settle_steps = 20
 
     try:
         for step in range(args.sim_steps):
-            target_position_array = None
-            if scene is not None:
-                target_position, _ = p.getBasePositionAndOrientation(scene.target_id)
-                target_position_array = np.asarray(target_position, dtype=float)
+            target_position, _ = p.getBasePositionAndOrientation(scene.target_id)
+            target_position_array = np.asarray(target_position, dtype=float)
 
             if state == DemoState.TAKEOFF:
                 hover_target = [0.0, 0.0, args.hover_z]
                 uav_controller.step(hover_target)
                 arm_controller.command_home()
-                if uav_controller.at_target(hover_target):
-                    if scene is None:
-                        end_effector_home, _ = arm_controller.get_end_effector_pose()
-                        target_spawn = end_effector_home + np.array(
-                            [args.target_x, args.target_y, args.target_z_offset],
-                            dtype=float,
-                        )
-                        scene = create_demo_scene(p, target_position=tuple(target_spawn.tolist()))
-                        print(f"Spawned target at {np.round(target_spawn, 3).tolist()}")
+                if step - state_entry_step >= takeoff_settle_steps and uav_controller.at_target(hover_target):
+                    state, state_entry_step = DemoState.TRANSIT, step
+                    print(f"[step {step}] Transition -> TRANSIT")
+
+            elif state == DemoState.TRANSIT:
+                uav_controller.step(transit_hover_target)
+                arm_controller.command_home()
+                if uav_controller.at_target(transit_hover_target, position_tolerance=0.05):
                     state, state_entry_step = DemoState.ALIGN, step
                     print(f"[step {step}] Transition -> ALIGN")
 
             elif state == DemoState.ALIGN:
-                hover_target = [0.0, 0.0, args.hover_z]
-                uav_controller.step(hover_target)
+                uav_controller.step(transit_hover_target)
                 arm_controller.command_home()
-                if uav_controller.at_target(hover_target, position_tolerance=0.04):
+                if step - state_entry_step >= align_settle_steps and uav_controller.at_target(transit_hover_target, position_tolerance=0.04):
                     state, state_entry_step = DemoState.DESCEND, step
                     print(f"[step {step}] Transition -> DESCEND")
 
             elif state == DemoState.DESCEND:
-                hover_target = [0.0, 0.0, args.grasp_z]
+                hover_target = [args.transit_x, args.transit_y, args.grasp_z]
                 uav_controller.step(hover_target)
                 arm_controller.command_home()
                 if uav_controller.at_target(hover_target, position_tolerance=0.04):
@@ -212,7 +225,7 @@ def main() -> None:
                     print(f"[step {step}] Transition -> APPROACH")
 
             elif state == DemoState.APPROACH:
-                hover_target = [0.0, 0.0, args.grasp_z]
+                hover_target = [args.transit_x, args.transit_y, args.grasp_z]
                 approach_target = (target_position_array + pre_grasp_offset).tolist()
                 uav_controller.step(hover_target)
                 residual = arm_controller.command_end_effector(approach_target)
@@ -221,7 +234,7 @@ def main() -> None:
                     print(f"[step {step}] Transition -> STABILIZE")
 
             elif state == DemoState.STABILIZE:
-                hover_target = [0.0, 0.0, args.grasp_z]
+                hover_target = [args.transit_x, args.transit_y, args.grasp_z]
                 approach_target = (target_position_array + pre_grasp_offset).tolist()
                 uav_controller.step(hover_target)
                 arm_controller.command_end_effector(approach_target)
@@ -231,7 +244,7 @@ def main() -> None:
                     print(f"[step {step}] Transition -> GRASP")
 
             elif state == DemoState.GRASP:
-                hover_target = [0.0, 0.0, args.grasp_z]
+                hover_target = [args.transit_x, args.transit_y, args.grasp_z]
                 grasp_target = (target_position_array + grasp_offset).tolist()
                 uav_controller.step(hover_target)
                 arm_controller.command_end_effector(grasp_target)
@@ -240,8 +253,12 @@ def main() -> None:
                 else:
                     grasp_ready_steps = 0
 
-                if grasp_ready_steps >= 8:
-                    attempt = gripper.close(scene.target_id, disable_collisions_with=[scene.pedestal_id])
+                if grasp_ready_steps >= 4:
+                    attempt = gripper.close_with_options(
+                        scene.target_id,
+                        disable_collisions_with=[scene.pedestal_id],
+                        release_constraint_ids=[scene.target_support_constraint_id],
+                    )
                     if attempt.success:
                         grasp_anchor_position = target_position_array.copy()
                         state, state_entry_step = DemoState.SECURE, step
@@ -250,7 +267,7 @@ def main() -> None:
                     raise RuntimeError("Failed to create a grasp constraint within the grasp timeout.")
 
             elif state == DemoState.SECURE:
-                hover_target = [0.0, 0.0, args.grasp_z]
+                hover_target = [args.transit_x, args.transit_y, args.grasp_z]
                 secure_target = (target_position_array + grasp_offset).tolist()
                 uav_controller.step(hover_target)
                 arm_controller.command_end_effector(secure_target)
@@ -260,7 +277,7 @@ def main() -> None:
 
             elif state == DemoState.LIFT:
                 lift_progress = min(1.0, (step - state_entry_step) / 60.0)
-                hover_target = [0.0, 0.0, args.grasp_z + lift_progress * (args.lift_z - args.grasp_z)]
+                hover_target = [args.transit_x, args.transit_y, args.grasp_z + lift_progress * (args.lift_z - args.grasp_z)]
                 desired_lift_z = grasp_anchor_position[2] + 0.04 + lift_clearance * lift_progress
                 safe_lift_z = min(desired_lift_z, hover_target[2] - end_effector_below_base_margin)
                 safe_lift_z = max(safe_lift_z, grasp_anchor_position[2] + 0.03)
@@ -276,7 +293,7 @@ def main() -> None:
                     print(f"[step {step}] Transition -> HOLD")
 
             elif state == DemoState.HOLD:
-                hover_target = [0.0, 0.0, args.lift_z]
+                hover_target = [args.transit_x, args.transit_y, args.lift_z]
                 safe_hold_z = min(
                     grasp_anchor_position[2] + 0.04 + lift_clearance,
                     hover_target[2] - end_effector_below_base_margin,
