@@ -33,7 +33,6 @@ def ensure_project_venv() -> None:
 
 ensure_project_venv()
  
-
 try:
     import numpy as np
     import pybullet as p
